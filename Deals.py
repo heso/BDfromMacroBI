@@ -56,18 +56,6 @@ def get_data():
                 date_progress = agreement_date
                 print(date_progress)
 
-            # data.append({'id': id,
-            #              'agreement_date': agreement_date,
-            #              'area': area,
-            #              'category': category,
-            #              'sum': sum,
-            #              'bank': bank,
-            #              'bank_name': bank_name,
-            #              'program': program,
-            #              'agent': agent,
-            #              'mediator_commission': mediator_commission,
-            #              'house_id': house_id})
-
             data.append((id,
                          agreement_date,
                          area,
