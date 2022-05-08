@@ -32,13 +32,6 @@ def get_data():
                 house_address = houses['address']
                 house_status = houses['status']
 
-                # data.append({'house_id': house_id,
-                #              'house_name': house_name,
-                #              'complex_id': complex_id,
-                #              'complex_name': complex_name,
-                #              'house_address': house_address,
-                #              'house_status': house_status})
-
                 data.append((house_id,
                              house_name,
                              complex_id,

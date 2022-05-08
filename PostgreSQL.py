@@ -1,4 +1,5 @@
 import psycopg2
+import datetime
 
 class ConnectionError(Exception):
     pass
@@ -6,7 +7,6 @@ class ConnectionError(Exception):
 
 class SQLError(Exception):
     pass
-
 
 class MacroBIDB:
 
@@ -47,6 +47,22 @@ class MacroBIDB:
         self.cursor.close()
         self.connection.close()
 
+    def get_maximum_date(self, table_name: str) -> datetime:
+
+        if table_name == 'Deals':
+            date_field_name = 'agreement_date'
+        else:
+            date_field_name = 'date_added'
+
+        query = f'SELECT MAX({date_field_name}) FROM {table_name}'
+
+        try:
+            self.cursor.execute(query)
+            result = self.cursor.fetchone()[0]
+        except (psycopg2.Error, ValueError):
+            raise SQLError(f'Error to get maximum date from {table_name}')
+        return result or datetime.datetime(2000, 1, 1)
+
     def create_table(self, table_name: str, captions: list, use_leads_or_deals: bool = False) -> None:
         table_captions = ', '.join(captions)
         if use_leads_or_deals:
@@ -70,8 +86,9 @@ class MacroBIDB:
             self.cursor.execute(create_users_table_temp)
         except psycopg2.Error:
             raise SQLError("Error to create temp_DB")
+        self.connection.commit()
 
-    def insert_data(self, table_name: str, captions: list, data: list, use_leads_or_deals: bool = False):
+    def insert_data(self, table_name: str, captions: list, data: list, use_leads_or_deals: bool = False) -> None:
         captions = [x.split(' ')[0] for x in captions]
         if use_leads_or_deals:
             table_temp_captions = ', '.join(captions[:-3])

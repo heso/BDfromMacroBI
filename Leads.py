@@ -1,41 +1,37 @@
-from datetime import datetime
 import requests
 import json
 import os
-from dotenv import load_dotenv
 import urllib.parse
 
+from datetime import datetime as dt, timedelta
+from dotenv import load_dotenv
 from DB_Config import captions_Leads, api_url
-
 from PostgreSQL import *
 
 load_dotenv()
 
 
-def getData():
-    date_from = '29.03.2000'
+def get_data(date_from: str):
 
     api_key = urllib.parse.quote_plus(os.environ.get('api_key'))
 
-    url = (f'{api_url}{api_key}/getEstateBuys.json?date_modified_from={date_from}')
+    url = f'{api_url}{api_key}/getEstateBuys.json?date_modified_from={date_from}'
 
     request = requests.get(url).content
     json_leads = json.loads(request)
 
     flag_running = len(json_leads['data']) != 0
 
-    date_progress = (datetime.strptime(date_from, "%d.%m.%Y")).date()
+    date_progress = (dt.strptime(date_from, "%d.%m.%Y")).date()
     id_dict_list = dict()
 
     while flag_running:
         for lead in json_leads['data']:
             lead_id = lead['id']
-            # lead_date_modified = lead['date_modified']
             lead_date_added = lead['date_added']
             lead_status = lead['status']
             lead_category = None if lead['category'] == '' else lead['category']
-            # lead_date_modified_dt = datetime.fromtimestamp(lead_date_modified).date()
-            lead_date_added_dt = datetime.fromtimestamp(lead_date_added).date()
+            lead_date_added_dt = dt.fromtimestamp(lead_date_added).date()
 
             if lead_status in (30, 50, 100):
                 lead_house_id = lead['sell_parent_id']
@@ -72,10 +68,11 @@ def main():
     password = os.environ.get('db_password')
     database = os.environ.get('db_base')
 
-    data = getData()
     try:
         with MacroBIDB(host, username, password, database) as db:
             db.create_table('Leads', captions_Leads, True)
+            date_from = dt.strftime(db.get_maximum_date('Leads') - timedelta(1), '%d.%m.%Y')
+            data = get_data(date_from)
             db.insert_data('Leads', captions_Leads, data, True)
     except ConnectionError as err:
         print(f'Unable to connect to DB {str(err)}')

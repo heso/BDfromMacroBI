@@ -2,18 +2,16 @@ import requests
 import json
 import os
 import urllib.parse
-
 from dotenv import load_dotenv
-from datetime import datetime
+
+from datetime import datetime as dt
 from DB_Config import captions_Deals, api_url
 from PostgreSQL import *
 
 load_dotenv()
 
 
-def get_data():
-    date_from = '01.03.2022'
-
+def get_data(date_from: str):
     api_key = urllib.parse.quote_plus(os.environ.get('api_key'))
 
     url = f'{api_url}{api_key}/getEstateDeals.json?agreement_date_from={date_from}'
@@ -23,16 +21,16 @@ def get_data():
 
     flag_running = len(json_deals['data']) != 0
 
-    date_progress = (datetime.strptime(date_from, "%d.%m.%Y")).date()
+    date_progress = (dt.strptime(date_from, "%d.%m.%Y")).date()
     data = []
 
     while flag_running:
         for deal in json_deals['data']:
-            id = deal['id']
+            deal_id = deal['id']
             house_id = deal['object']['parent_id']
-            agreement_date = datetime.strptime(deal['deal']['agreement_date'], '%d.%m.%Y').date()
+            agreement_date = dt.strptime(deal['deal']['agreement_date'], '%d.%m.%Y').date()
             area = deal['object']['estate_area']
-            sum = deal['deal']['deal_sum']
+            deal_sum = deal['deal']['deal_sum']
             category = deal['object']['category']
             mediator_commission = deal['deal']['deal_mediator_comission']
 
@@ -56,11 +54,11 @@ def get_data():
                 date_progress = agreement_date
                 print(date_progress)
 
-            data.append((id,
+            data.append((deal_id,
                          agreement_date,
                          area,
                          category,
-                         sum,
+                         deal_sum,
                          bank,
                          bank_name,
                          program,
@@ -83,11 +81,11 @@ def main():
     password = os.environ.get('db_password')
     database = os.environ.get('db_base')
 
-    data = get_data()
-
     try:
         with MacroBIDB(host, username, password, database) as db:
             db.create_table('Deals', captions_Deals, True)
+            date_from = dt.strftime(db.get_maximum_date('Deals'), '%d.%m.%Y')
+            data = get_data(date_from)
             db.insert_data('Deals', captions_Deals, data, True)
     except ConnectionError as err:
         print(f'Unable to connect to DB {str(err)}')
