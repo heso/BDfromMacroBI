@@ -2,18 +2,21 @@ import requests
 import json
 import os
 import urllib.parse
+
 from dotenv import load_dotenv
+from loguru import logger
+
 from DB_Config import captions_Houses, captions_types_translations, types_translations
-from PostgreSQL import *
+from PostgreSQL import MacroBIDB, ConnectionDBError, SQLError
 
 load_dotenv()
 
 
-def get_data():
+def get_houses_data():
 
     api_key = urllib.parse.quote_plus(os.environ.get('api_key'))
 
-    url = (f'https://api.macroserver.ru/analytics/goodbi/{api_key}/getEstateComplexes.json?')
+    url = f'https://api.macroserver.ru/analytics/goodbi/{api_key}/getEstateComplexes.json?'
 
     request = requests.get(url).content
     json_objects = json.loads(request)
@@ -23,10 +26,10 @@ def get_data():
     data = []
 
     while flag_running:
-        for complex in json_objects['data']:
-            complex_id = complex['id']
-            complex_name = complex['name']
-            for houses in complex['houses']:
+        for complex_object in json_objects['data']:
+            complex_id = complex_object['id']
+            complex_name = complex_object['name']
+            for houses in complex_object['houses']:
                 house_id = houses['id']
                 house_name = houses['name']
                 house_address = houses['address']
@@ -48,28 +51,26 @@ def get_data():
     return data
 
 
+@logger.catch()
 def main():
     host = os.environ.get('db_host')
     username = os.environ.get('db_username')
     password = os.environ.get('db_password')
     database = os.environ.get('db_base')
 
-    data = get_data()
+    data = get_houses_data()
 
     try:
         with MacroBIDB(host, username, password, database) as db:
             db.create_table('Types_translations', captions_types_translations)
             db.insert_data('Types_translations', captions_types_translations, types_translations)
-
             db.create_table('Houses', captions_Houses)
             db.insert_data('Houses', captions_Houses, data)
-
-    except ConnectionError as err:
-        print(f'Unable to connect to DB {str(err)}')
+        logger.success('Houses updated.')
+    except ConnectionDBError as err:
+        logger.error(f'Houses. Unable to connect to DB {str(err)}')
     except SQLError as err:
-        print(f'Something wrong with query: {str(err)}')
-    except Exception as err:
-        print(f'Something went wrong: {str(err)}')
+        logger.error(f'Houses. Something wrong with query: {str(err)}')
 
 
 if __name__ == '__main__':

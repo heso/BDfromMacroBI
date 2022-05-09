@@ -5,13 +5,15 @@ import urllib.parse
 
 from datetime import datetime as dt, timedelta
 from dotenv import load_dotenv
+from loguru import logger
+
 from DB_Config import captions_Leads, api_url
-from PostgreSQL import *
+from PostgreSQL import MacroBIDB, ConnectionDBError, SQLError
 
 load_dotenv()
 
 
-def get_data(date_from: str):
+def get_leads_data(date_from: str):
 
     api_key = urllib.parse.quote_plus(os.environ.get('api_key'))
 
@@ -44,7 +46,7 @@ def get_data(date_from: str):
             lead_date_added_new = lead_date_added_dt
             if lead_date_added_new > date_progress:
                 date_progress = lead_date_added_dt
-                print(date_progress)
+                # logger.info(f'Leads date - {date_progress}.')
 
             if lead_id not in id_dict_list.keys():
                 id_dict_list[lead_id] = (lead_id, lead_date_added_dt, lead_category, lead_status, lead_house_id)
@@ -62,6 +64,7 @@ def get_data(date_from: str):
     return list(id_dict_list.values())
 
 
+@logger.catch()
 def main():
     host = os.environ.get('db_host')
     username = os.environ.get('db_username')
@@ -72,14 +75,13 @@ def main():
         with MacroBIDB(host, username, password, database) as db:
             db.create_table('Leads', captions_Leads, True)
             date_from = dt.strftime(db.get_maximum_date('Leads') - timedelta(1), '%d.%m.%Y')
-            data = get_data(date_from)
+            data = get_leads_data(date_from)
             db.insert_data('Leads', captions_Leads, data, True)
-    except ConnectionError as err:
-        print(f'Unable to connect to DB {str(err)}')
+        logger.success('Leads updated.')
+    except ConnectionDBError as err:
+        logger.error(f'Leads. Unable to connect to DB {str(err)}')
     except SQLError as err:
-        print(f'Something wrong with query: {str(err)}')
-    except Exception as err:
-        print(f'Something went wrong: {str(err)}')
+        logger.error(f'Leads. Something wrong with query: {str(err)}')
 
 
 if __name__ == '__main__':

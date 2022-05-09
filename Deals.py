@@ -1,17 +1,20 @@
-import requests
-import json
 import os
+import json
+import requests
 import urllib.parse
-from dotenv import load_dotenv
 
+from dotenv import load_dotenv
 from datetime import datetime as dt
+from loguru import logger
+
 from DB_Config import captions_Deals, api_url
-from PostgreSQL import *
+from PostgreSQL import MacroBIDB, ConnectionDBError, SQLError
+
 
 load_dotenv()
 
 
-def get_data(date_from: str):
+def get_deals_data(date_from: str):
     api_key = urllib.parse.quote_plus(os.environ.get('api_key'))
 
     url = f'{api_url}{api_key}/getEstateDeals.json?agreement_date_from={date_from}'
@@ -52,7 +55,7 @@ def get_data(date_from: str):
 
             if agreement_date > date_progress:
                 date_progress = agreement_date
-                print(date_progress)
+                logger.info(f'Deals date - {date_progress}.')
 
             data.append((deal_id,
                          agreement_date,
@@ -75,6 +78,7 @@ def get_data(date_from: str):
     return data
 
 
+@logger.catch()
 def main():
     host = os.environ.get('db_host')
     username = os.environ.get('db_username')
@@ -85,14 +89,13 @@ def main():
         with MacroBIDB(host, username, password, database) as db:
             db.create_table('Deals', captions_Deals, True)
             date_from = dt.strftime(db.get_maximum_date('Deals'), '%d.%m.%Y')
-            data = get_data(date_from)
+            data = get_deals_data(date_from)
             db.insert_data('Deals', captions_Deals, data, True)
-    except ConnectionError as err:
-        print(f'Unable to connect to DB {str(err)}')
+        logger.success('Deals updated.')
+    except ConnectionDBError as err:
+        logger.error(f'Deals. Unable to connect to DB {str(err)}')
     except SQLError as err:
-        print(f'Something wrong with query: {str(err)}')
-    except Exception as err:
-        print(f'Something went wrong: {str(err)}')
+        logger.error(f'Deals. Something wrong with query: {str(err)}')
 
 
 if __name__ == '__main__':

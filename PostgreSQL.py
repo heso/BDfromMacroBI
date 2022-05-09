@@ -1,12 +1,14 @@
 import psycopg2
 import datetime
 
-class ConnectionError(Exception):
+
+class ConnectionDBError(Exception):
     pass
 
 
 class SQLError(Exception):
     pass
+
 
 class MacroBIDB:
 
@@ -26,9 +28,9 @@ class MacroBIDB:
                                               )
             self.cursor = self.connection.cursor()
         except psycopg2.OperationalError as err:
-            raise ConnectionError(err)
+            raise ConnectionDBError(err)
         except psycopg2.Error as err:
-            raise ConnectionError(err)
+            raise ConnectionDBError(err)
 
         return self
 
