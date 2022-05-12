@@ -37,14 +37,14 @@ def get_deals_data(date_from: str):
             category = deal['object']['category']
             mediator_commission = deal['deal']['deal_mediator_comission']
 
-            agent = ''
+            agent = 'Не определено'
             if deal['agent'] is not None:
                 agent = deal['agent']['agent_org']['name']
                 if agent == 'Null' or agent == '' or agent is None:
                     agent = deal['agent']['name']
 
             bank = False
-            bank_name = ''
+            bank_name = 'Не заполнено'
             if deal['bank'] is not None:
                 bank = True
                 bank_name = deal['bank']['name']
