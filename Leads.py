@@ -46,7 +46,7 @@ def get_leads_data(date_from: str):
             lead_date_added_new = lead_date_added_dt
             if lead_date_added_new > date_progress:
                 date_progress = lead_date_added_dt
-                # logger.info(f'Leads date - {date_progress}.')
+                logger.info(f'Leads date - {date_progress}.')
 
             if lead_id not in id_dict_list.keys():
                 id_dict_list[lead_id] = (lead_id, lead_date_added_dt, lead_category, lead_status, lead_house_id)
