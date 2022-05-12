@@ -24,10 +24,10 @@ captions_Leads = ['id INTEGER',
                   'complex_name TEXT',
                   'house_name TEXT']
 
-captions_Houses = ['complexID INTEGER',
-                   'complexName TEXT',
-                   'houseID INTEGER',
+captions_Houses = ['houseID INTEGER',
                    'houseName TEXT',
+                   'complexID INTEGER',
+                   'complexName TEXT',
                    'houseAddress TEXT',
                    'houseStatus INTEGER']
 
