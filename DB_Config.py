@@ -2,6 +2,7 @@ api_url = 'https://api.macroserver.ru/analytics/goodbi/'
 
 captions_Deals = ['id INTEGER',
                   'agreement_date DATE',
+                  'date_modified DATE',
                   'area double precision',
                   'category TEXT',
                   'status INTEGER',

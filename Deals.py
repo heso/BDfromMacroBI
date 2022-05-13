@@ -17,7 +17,7 @@ load_dotenv()
 def get_deals_data(date_from: str):
     api_key = urllib.parse.quote_plus(os.environ.get('api_key'))
 
-    url = f'{api_url}{api_key}/getEstateDeals.json?agreement_date_from={date_from}'
+    url = f'{api_url}{api_key}/getEstateDeals.json?date_modified_from={date_from}'
 
     request = requests.get(url).content
     json_deals = json.loads(request)
@@ -31,7 +31,12 @@ def get_deals_data(date_from: str):
         for deal in json_deals['data']:
             deal_id = deal['id']
             house_id = deal['object']['parent_id']
-            agreement_date = dt.strptime(deal['deal']['agreement_date'], '%d.%m.%Y').date()
+
+            agreement_date = None
+            if deal['deal']['agreement_date']:
+                agreement_date = dt.strptime(deal['deal']['agreement_date'], '%d.%m.%Y').date()
+
+            date_modified = dt.strptime(deal['deal']['date_modified'], '%Y-%m-%d %H:%M:%S').date()
             area = deal['object']['estate_area']
             deal_sum = deal['deal']['deal_sum']
             status = deal['deal']['status']
@@ -54,12 +59,13 @@ def get_deals_data(date_from: str):
             if deal['deal'] is not None:
                 program = deal['deal']['deal_program']
 
-            if agreement_date > date_progress:
-                date_progress = agreement_date
+            if date_modified > date_progress:
+                date_progress = date_modified
                 logger.info(f'Deals date - {date_progress}.')
 
             data.append((deal_id,
                          agreement_date,
+                         date_modified,
                          area,
                          category,
                          status,
