@@ -34,6 +34,7 @@ def get_deals_data(date_from: str):
             agreement_date = dt.strptime(deal['deal']['agreement_date'], '%d.%m.%Y').date()
             area = deal['object']['estate_area']
             deal_sum = deal['deal']['deal_sum']
+            status = deal['deal']['status']
             category = deal['object']['category']
             mediator_commission = deal['deal']['deal_mediator_comission']
 
@@ -61,6 +62,7 @@ def get_deals_data(date_from: str):
                          agreement_date,
                          area,
                          category,
+                         status,
                          deal_sum,
                          bank,
                          bank_name,
