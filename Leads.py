@@ -76,7 +76,7 @@ def main():
             db.create_table('Leads', captions_Leads, True)
             date_from = dt.strftime(db.get_maximum_date('Leads') - timedelta(1), '%d.%m.%Y')
             data = get_leads_data(date_from)
-            db.insert_data('Leads', captions_Leads, data, True)
+            db.insert_data('Leads', captions_Leads, data, use_leads=True)
         logger.success('Leads updated.')
     except ConnectionDBError as err:
         logger.error(f'Leads. Unable to connect to DB {str(err)}')

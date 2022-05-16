@@ -90,9 +90,9 @@ class MacroBIDB:
             raise SQLError("Error to create temp_DB")
         self.connection.commit()
 
-    def insert_data(self, table_name: str, captions: list, data: list, use_leads_or_deals: bool = False) -> None:
+    def insert_data(self, table_name: str, captions: list, data: list, use_deals: bool = False, use_leads: bool = False) -> None:
         captions = [x.split(' ')[0] for x in captions]
-        if use_leads_or_deals:
+        if use_leads or use_deals:
             table_temp_captions = ', '.join(captions[:-3])
         else:
             table_temp_captions = ', '.join(captions)
@@ -100,12 +100,26 @@ class MacroBIDB:
         table_data = ", ".join(["%s"] * len(data))
 
         insert_query = (f'''
-                            INSERT INTO {table_name}_temp ({table_temp_captions}) VALUES {table_data}; 
-                            DELETE FROM {table_name} 
-                            WHERE {captions[0]} IN (SELECT {captions[0]} FROM {table_name}_temp);
+                            INSERT INTO {table_name}_temp ({table_temp_captions}) 
+                            VALUES {table_data}; 
                          ''')
 
-        if use_leads_or_deals:
+        if use_deals:
+            insert_query += (f'''
+                                UPDATE deals_temp
+                                SET status_modified_date = d.status_modified_date 
+                                FROM deals d
+                                JOIN deals_temp dt on dt.id=d.id AND dt.status=d.status
+                                WHERE deals_temp.id=d.id;
+                          ''')
+
+        insert_query += (f'''
+                            DELETE FROM {table_name} 
+                            WHERE {captions[0]} IN (SELECT {captions[0]} 
+                                                    FROM {table_name}_temp);
+                         ''')
+
+        if use_leads or use_deals:
             insert_query += (f'''
                                 INSERT INTO {table_name} 
                                 SELECT t.*

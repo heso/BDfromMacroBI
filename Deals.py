@@ -37,6 +37,9 @@ def get_deals_data(date_from: str):
                 agreement_date = dt.strptime(deal['deal']['agreement_date'], '%d.%m.%Y').date()
 
             date_modified = dt.strptime(deal['deal']['date_modified'], '%Y-%m-%d %H:%M:%S').date()
+
+            status_modified_date = date_modified
+
             area = deal['object']['estate_area']
             deal_sum = deal['deal']['deal_sum']
             status = deal['deal']['status']
@@ -66,6 +69,7 @@ def get_deals_data(date_from: str):
             data.append((deal_id,
                          agreement_date,
                          date_modified,
+                         status_modified_date,
                          area,
                          category,
                          status,
@@ -98,7 +102,7 @@ def main():
             db.create_table('Deals', captions_Deals, True)
             date_from = dt.strftime(db.get_maximum_date('Deals'), '%d.%m.%Y')
             data = get_deals_data(date_from)
-            db.insert_data('Deals', captions_Deals, data, True)
+            db.insert_data('Deals', captions_Deals, data, use_deals=True)
         logger.success('Deals updated.')
     except ConnectionDBError as err:
         logger.error(f'Deals. Unable to connect to DB {str(err)}')
