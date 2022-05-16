@@ -37,7 +37,7 @@ def get_deals_data(date_from: str):
                 agreement_date = dt.strptime(deal['deal']['agreement_date'], '%d.%m.%Y').date()
 
             date_modified = dt.strptime(deal['deal']['date_modified'], '%Y-%m-%d %H:%M:%S').date()
-
+            is_payed_reserve = deal['deal']['is_payed_reserve']
             status_modified_date = date_modified
 
             area = deal['object']['estate_area']
@@ -73,6 +73,7 @@ def get_deals_data(date_from: str):
                          area,
                          category,
                          status,
+                         is_payed_reserve,
                          deal_sum,
                          bank,
                          bank_name,
