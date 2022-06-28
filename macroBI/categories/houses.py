@@ -4,7 +4,7 @@ from loguru import logger
 
 from .usefull_functions import get_json_from_url
 from ..postgreSQL import MacroBIDB, ConnectionDBError, SQLError
-from ..db_config import captions_types_translations, types_translations, \
+from ..configs import captions_types_translations, types_translations, \
                       captions_Houses, \
                       url_houses, \
                       host, database, \

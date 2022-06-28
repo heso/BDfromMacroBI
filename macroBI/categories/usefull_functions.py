@@ -2,7 +2,7 @@ import requests
 import json
 from datetime import datetime
 
-from ..db_config import path_requests_text
+from ..configs import path_requests_text
 
 
 def get_json_from_url(url: str):

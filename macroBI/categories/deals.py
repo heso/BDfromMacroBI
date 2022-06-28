@@ -7,7 +7,7 @@ import json
 from datetime import datetime as dt
 from loguru import logger
 
-from ..db_config import captions_Deals, url_deals, host, username, password, database
+from ..configs import captions_Deals, url_deals, host, username, password, database
 from ..postgreSQL import MacroBIDB, ConnectionDBError, SQLError
 from .usefull_functions import get_json_from_url
 

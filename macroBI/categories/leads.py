@@ -6,7 +6,7 @@ from datetime import datetime as dt, timedelta, date
 
 from loguru import logger
 
-from ..db_config import captions_Leads, url_leads, host, username, password, database
+from ..configs import captions_Leads, url_leads, host, username, password, database
 from ..postgreSQL import MacroBIDB, ConnectionDBError, SQLError
 from .usefull_functions import get_json_from_url
 
