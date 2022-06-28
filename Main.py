@@ -4,10 +4,7 @@ from loguru import logger
 from notifiers.logging import NotificationHandler
 from dotenv import load_dotenv
 
-import Houses
-import Deals
-import Leads
-
+import MacroBI
 load_dotenv()
 
 
@@ -22,14 +19,14 @@ def main():
     logger.add('logs/log.json',
                format='{time:YYYY-MM-DD HH:mm:ss} {level} {message}',
                level='INFO',
-               rotation='10 MB',
+               rotation='1 MB',
                retention='30 days',
-               serialize=True)
+               serialize=False)
     logger.add(handler, level="ERROR")
 
-    Houses.main()
-    Deals.main()
-    Leads.main()
+    MacroBI.get_houses
+    MacroBI.get_leads()
+    MacroBI.get_houses()
 
 
 if __name__ == '__main__':

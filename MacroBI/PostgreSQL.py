@@ -3,11 +3,11 @@ import datetime
 
 
 class ConnectionDBError(Exception):
-    pass
+    """Ошибка подключения к базе данных"""
 
 
 class SQLError(Exception):
-    pass
+    """Не удалось выполнить запрос к базе данных"""
 
 
 class MacroBIDB:
@@ -109,7 +109,9 @@ class MacroBIDB:
                                 UPDATE deals_temp
                                 SET status_modified_date = d.status_modified_date 
                                 FROM deals d
-                                JOIN deals_temp dt on dt.id=d.id AND dt.status=d.status
+                                JOIN deals_temp dt on dt.id=d.id AND 
+                                     dt.status=d.status AND 
+                                     dt.is_payed_reserve=d.is_payed_reserve
                                 WHERE deals_temp.id=d.id;
                           ''')
 

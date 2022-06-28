@@ -1,28 +1,25 @@
+__all__ = ['get_houses']
+
 import requests
 import json
-import os
-import urllib.parse
 
-from dotenv import load_dotenv
 from loguru import logger
 
-from DB_Config import captions_Houses, captions_types_translations, types_translations
-from PostgreSQL import MacroBIDB, ConnectionDBError, SQLError
-
-load_dotenv()
+from ..PostgreSQL import MacroBIDB, ConnectionDBError, SQLError
+from ..DB_Config import captions_types_translations, types_translations, \
+                      captions_Houses, \
+                      url_houses, \
+                      host, database, \
+                      username, password
 
 
 def get_houses_data():
 
-    api_key = urllib.parse.quote_plus(os.environ.get('api_key'))
-
-    url = f'https://api.macroserver.ru/analytics/goodbi/{api_key}/getEstateComplexes.json?'
-
+    url = url_houses
     request = requests.get(url).content
     json_objects = json.loads(request)
 
     flag_running = len(json_objects['data']) != 0
-
     data = []
 
     while flag_running:
@@ -52,14 +49,8 @@ def get_houses_data():
 
 
 @logger.catch()
-def main():
-    host = os.environ.get('db_host')
-    username = os.environ.get('db_username')
-    password = os.environ.get('db_password')
-    database = os.environ.get('db_base')
-
+def get_houses():
     data = get_houses_data()
-
     try:
         with MacroBIDB(host, username, password, database) as db:
             db.create_table('Types_translations', captions_types_translations)
@@ -74,4 +65,4 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    get_houses()

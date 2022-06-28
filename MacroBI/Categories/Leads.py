@@ -1,47 +1,33 @@
+__all__ = ['get_leads']
+
+import datetime
 import requests
 import json
-import os
-import urllib.parse
 
 from datetime import datetime as dt, timedelta
-from dotenv import load_dotenv
+
 from loguru import logger
 
-from DB_Config import captions_Leads, api_url
-from PostgreSQL import MacroBIDB, ConnectionDBError, SQLError
-
-load_dotenv()
+from ..DB_Config import captions_Leads, url_leads, host, username, password, database
+from ..PostgreSQL import MacroBIDB, ConnectionDBError, SQLError
 
 
 def get_leads_data(date_from: str):
 
-    api_key = urllib.parse.quote_plus(os.environ.get('api_key'))
-
-    url = f'{api_url}{api_key}/getEstateBuys.json?date_modified_from={date_from}'
-
+    url = f'{url_leads}?date_modified_from={date_from}'
     request = requests.get(url).content
     json_leads = json.loads(request)
-
     flag_running = len(json_leads['data']) != 0
-
     date_progress = (dt.strptime(date_from, "%d.%m.%Y")).date()
     id_dict_list = dict()
 
     while flag_running:
         for lead in json_leads['data']:
-            lead_id = lead['id']
-            lead_date_added = lead['date_added']
-            lead_status = lead['status']
-            lead_category = None if lead['category'] == '' else lead['category']
-            lead_date_added_dt = dt.fromtimestamp(lead_date_added).date()
-
-            if lead_status in (30, 50, 100):
-                lead_house_id = lead['sell_parent_id']
-            else:
-                if 'estate_buy_housesInterest' in lead['entity_attrs']:
-                    lead_house_id = lead['entity_attrs']['estate_buy_housesInterest'][0]
-                else:
-                    lead_house_id = None
+            lead_id = _get_id(lead)
+            lead_status = _get_status(lead)
+            lead_category = _get_category(lead)
+            lead_date_added_dt = _get_date_added_dt(lead)
+            lead_house_id = _get_house_id(lead)
 
             lead_date_added_new = lead_date_added_dt
             if lead_date_added_new > date_progress:
@@ -64,13 +50,42 @@ def get_leads_data(date_from: str):
     return list(id_dict_list.values())
 
 
-@logger.catch()
-def main():
-    host = os.environ.get('db_host')
-    username = os.environ.get('db_username')
-    password = os.environ.get('db_password')
-    database = os.environ.get('db_base')
+def _get_id(lead: json) -> int:
+    return lead['id']
 
+
+def _get_date_added(lead: json) -> int:
+    return lead['date_added']
+
+
+def _get_status(lead: json) -> int:
+    return lead['status']
+
+
+def _get_category(lead: json) -> str:
+    result = None if lead['category'] == '' else lead['category']
+    return result
+
+
+def _get_date_added_dt(lead: json) -> datetime.date:
+    result = dt.fromtimestamp(_get_date_added(lead)).date()
+    return result
+
+
+def _get_house_id(lead: json) -> int:
+    lead_status = _get_status(lead)
+    if lead_status in (30, 50, 100):
+        result = lead['sell_parent_id']
+    else:
+        if 'estate_buy_housesInterest' in lead['entity_attrs']:
+            result = lead['entity_attrs']['estate_buy_housesInterest'][0]
+        else:
+            result = None
+    return result
+
+
+@logger.catch()
+def get_leads():
     try:
         with MacroBIDB(host, username, password, database) as db:
             db.create_table('Leads', captions_Leads, True)
@@ -85,4 +100,4 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    get_leads()
