@@ -12,7 +12,7 @@ load_dotenv()
 def main():
     defaults = {
         'token': os.environ.get('telegram_token'),
-        'chat_id':  os.environ.get('chat_id')
+        'chat_id': os.environ.get('chat_id')
     }
     handler = NotificationHandler('telegram', defaults=defaults)
 
