@@ -3,24 +3,19 @@ __all__ = ['get_deals']
 import datetime
 import decimal
 import json
-import requests
 
 from datetime import datetime as dt
 from loguru import logger
 
-from ..DB_Config import captions_Deals, url_deals, host, username, password, database
-from ..PostgreSQL import MacroBIDB, ConnectionDBError, SQLError
+from ..db_config import captions_Deals, url_deals, host, username, password, database
+from ..postgreSQL import MacroBIDB, ConnectionDBError, SQLError
+from .usefull_functions import get_json_from_url
 
 
 def get_deals_data(date_from: str):
 
     url = f'{url_deals}?date_modified_from={date_from}'
-
-    request = requests.get(url).content
-    try:
-        json_deals = json.loads(request)
-    except json.JSONDecodeError:
-        pass
+    json_deals = get_json_from_url(url)
 
     flag_running = len(json_deals['data']) != 0
     date_progress = (dt.strptime(date_from, "%d.%m.%Y")).date()
@@ -67,8 +62,7 @@ def get_deals_data(date_from: str):
             flag_running = False
         else:
             url_new = url + '&from=' + str(json_deals['next'])
-            request = requests.get(url_new).content
-            json_deals = json.loads(request)
+            json_deals = get_json_from_url(url_new)
     return data
 
 

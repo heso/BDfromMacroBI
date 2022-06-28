@@ -1,12 +1,10 @@
 __all__ = ['get_houses']
 
-import requests
-import json
-
 from loguru import logger
 
-from ..PostgreSQL import MacroBIDB, ConnectionDBError, SQLError
-from ..DB_Config import captions_types_translations, types_translations, \
+from .usefull_functions import get_json_from_url
+from ..postgreSQL import MacroBIDB, ConnectionDBError, SQLError
+from ..db_config import captions_types_translations, types_translations, \
                       captions_Houses, \
                       url_houses, \
                       host, database, \
@@ -16,8 +14,7 @@ from ..DB_Config import captions_types_translations, types_translations, \
 def get_houses_data():
 
     url = url_houses
-    request = requests.get(url).content
-    json_objects = json.loads(request)
+    json_objects = get_json_from_url(url)
 
     flag_running = len(json_objects['data']) != 0
     data = []
@@ -43,8 +40,7 @@ def get_houses_data():
             flag_running = False
         else:
             url_new = url + str(json_objects['next'])
-            request = requests.get(url_new).content
-            json_objects = json.loads(request)
+            json_objects = get_json_from_url(url_new)
     return data
 
 

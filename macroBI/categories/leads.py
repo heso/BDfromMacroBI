@@ -1,22 +1,20 @@
 __all__ = ['get_leads']
 
-import datetime
-import requests
 import json
 
-from datetime import datetime as dt, timedelta
+from datetime import datetime as dt, timedelta, date
 
 from loguru import logger
 
-from ..DB_Config import captions_Leads, url_leads, host, username, password, database
-from ..PostgreSQL import MacroBIDB, ConnectionDBError, SQLError
+from ..db_config import captions_Leads, url_leads, host, username, password, database
+from ..postgreSQL import MacroBIDB, ConnectionDBError, SQLError
+from .usefull_functions import get_json_from_url
 
 
 def get_leads_data(date_from: str):
 
     url = f'{url_leads}?date_modified_from={date_from}'
-    request = requests.get(url).content
-    json_leads = json.loads(request)
+    json_leads = get_json_from_url(url)
     flag_running = len(json_leads['data']) != 0
     date_progress = (dt.strptime(date_from, "%d.%m.%Y")).date()
     id_dict_list = dict()
@@ -44,8 +42,7 @@ def get_leads_data(date_from: str):
             flag_running = False
         else:
             url_new = url + '&from=' + str(json_leads['next'])
-            request = requests.get(url_new).content
-            json_leads = json.loads(request)
+            json_leads = get_json_from_url(url_new)
 
     return list(id_dict_list.values())
 
@@ -67,7 +64,7 @@ def _get_category(lead: json) -> str:
     return result
 
 
-def _get_date_added_dt(lead: json) -> datetime.date:
+def _get_date_added_dt(lead: json) -> date:
     result = dt.fromtimestamp(_get_date_added(lead)).date()
     return result
 

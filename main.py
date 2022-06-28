@@ -4,7 +4,7 @@ from loguru import logger
 from notifiers.logging import NotificationHandler
 from dotenv import load_dotenv
 
-import MacroBI
+import macroBI
 load_dotenv()
 
 
@@ -24,9 +24,9 @@ def main():
                serialize=False)
     logger.add(handler, level="ERROR")
 
-    MacroBI.get_houses
-    MacroBI.get_leads()
-    MacroBI.get_houses()
+    macroBI.get_houses()
+    macroBI.get_leads()
+    macroBI.get_houses()
 
 
 if __name__ == '__main__':
