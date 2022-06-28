@@ -26,7 +26,7 @@ def main():
 
     macroBI.get_houses()
     macroBI.get_leads()
-    macroBI.get_houses()
+    macroBI.get_deals()
 
 
 if __name__ == '__main__':
