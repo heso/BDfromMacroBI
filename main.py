@@ -5,6 +5,7 @@ from notifiers.logging import NotificationHandler
 from dotenv import load_dotenv
 
 import macroBI
+
 load_dotenv()
 
 

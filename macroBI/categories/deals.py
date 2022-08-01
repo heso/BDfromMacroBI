@@ -37,6 +37,7 @@ def get_deals_data(date_from: str):
             agent = _get_agent(deal)
             bank,  bank_name = _get_bank(deal)
             program = _get_program(deal)
+            flat_number = _get_flat_number(deal)
 
             if date_modified > date_progress:
                 date_progress = date_modified
@@ -56,7 +57,8 @@ def get_deals_data(date_from: str):
                          program,
                          agent,
                          mediator_commission,
-                         house_id))
+                         house_id,
+                         flat_number))
 
         if json_deals['next'] is None:
             flag_running = False
@@ -107,6 +109,10 @@ def _get_category(deal: json) -> str:
 
 def _get_mediator_commission(deal: json) -> int:
     return deal['deal']['deal_mediator_comission']
+
+
+def _get_flat_number(deal: json) -> str:
+    return deal['object']['geo_flatnum']
 
 
 def _get_agent(deal: json) -> str:

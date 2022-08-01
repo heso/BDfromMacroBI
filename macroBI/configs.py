@@ -9,14 +9,14 @@ path_requests_text = 'requests/'
 api_url = 'https://api.macroserver.ru/analytics/goodbi/'
 api_key = urllib.parse.quote_plus(os.environ.get('api_key'))
 
-url_leads = f'{api_url}{api_key}/getEstateBuys.json'
-url_deals = f'{api_url}{api_key}/getEstateDeals.json'
-url_houses = f'{api_url}{api_key}/getEstateComplexes.json?'
-
 host = os.environ.get('db_host')
 username = os.environ.get('db_username')
 password = os.environ.get('db_password')
 database = os.environ.get('db_base')
+
+url_leads = f'{api_url}{api_key}/getEstateBuys.json'
+url_deals = f'{api_url}{api_key}/getEstateDeals.json'
+url_houses = f'{api_url}{api_key}/getEstateComplexes.json?'
 
 captions_Deals = ['id INTEGER',
                   'agreement_date DATE',
@@ -33,6 +33,7 @@ captions_Deals = ['id INTEGER',
                   'agent TEXT',
                   'mediator_comission NUMERIC',
                   'id_house INTEGER',
+                  'flat_number TEXT',
                   'type_rus TEXT',
                   'complex_name TEXT',
                   'house_name TEXT']
